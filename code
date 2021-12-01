@@ -1,0 +1,62 @@
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt  #this is for plotting
+import pandas_datareader as pdr #used to download stock prices from internet
+import statistics as stats
+
+mov_avg_window = 30
+
+#defining dates for data, think professor said since the beginning of the year but idk so edit whatever
+
+startDate= '2021-01-01'
+endDate = '2021-11-26'
+
+#store file name
+fileName = data.pk1
+
+stock_sym = 'BTC' #insert any stock symbol you want here to retrieve data
+
+try:
+    stocks= pd.read_pickle(stock_sym) #this only works from the data from your local computer, gotta download it first. add a way/consult with professor about how to download data later
+    print("Loading data...")
+except FileNotFoundError:
+    print('Data not found on local disk')
+    print('Downloading from Yahoo...')
+    stocks= pdr.get_data_yahoo(stock_symbol, start=startDate, end=endDate)
+    data.to_pickle(fileName)
+
+#inspecting data
+
+data.head()
+
+#plot downloaded data
+
+data['Adj Close'].plot #adj close = adjusted closing price
+
+closePrice = data['Adj Close'] #get closing price by itself
+
+closePrice.values #isolating the values
+
+
+#now that we have the values, lets calculate moving average
+
+solvedmovingavg = [] #stores computed moving avgs
+
+batch = [] #used to store the values of the past moving average window
+
+for i in closePrice.values:
+    batch.append(i)
+    if len(batch) > mov_avg_window: #doing this to keep the cycle, basically deleting old values
+        del(batch[0])
+    solvedmovingavg.append(stats.mean(batch)) #so basically what we're doing is just finding the mean
+
+data=data.assign(MovingAverage = pd.Series(solvedmovingavg, index=data.index)) #MovingAverage is name of new column containing computed mov average, index is the index of original data object (dates)
+
+
+#plotting
+fig1 = plt.figure(figsize(10,8))
+ax1 = fig1.add_subplot(111,ylabel='Stock Price')
+data['Adj Close'].plot(ax=ax1, color=g, lw=4, legend=True)
+data['MovingAverage'].plot(ax=ax1, color=b, lw=4, legend=True)
+plt.savefig('MovingAverage.png')
+plt.show()
